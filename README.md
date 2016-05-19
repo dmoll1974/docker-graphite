@@ -1,4 +1,4 @@
-[![Docker Hub](http://img.shields.io/badge/docker-hub-brightgreen.svg?style=flat)](https://registry.hub.docker.com/u/hopsoft/graphite-statsd/)
+[![Docker Pulls](https://img.shields.io/docker/pulls/hopsoft/graphite-statsd.svg?style=flat)](https://hub.docker.com/r/hopsoft/graphite-statsd/)
 [![Gratipay](http://img.shields.io/badge/gratipay-contribute-009bef.svg?style=flat)](https://gratipay.com/hopsoft/)
 
 # Docker Image for Graphite & Statsd
@@ -7,6 +7,11 @@
 
 Graphite & Statsd can be complex to setup.
 This image will have you running & collecting stats in just a few minutes.
+
+## Todo
+
+- [ ] Proxy Graphite's Django admin behind Nginx
+
 
 ## Quick Start
 
@@ -55,7 +60,8 @@ docker run -d\
 
 Host              | Container                  | Notes
 ----------------- | -------------------------- | -------------------------------
-DOCKER ASSIGNED   | /opt/graphite              | graphite config & stats storage
+DOCKER ASSIGNED   | /opt/graphite/conf         | graphite config
+DOCKER ASSIGNED   | /opt/graphite/storage      | graphite stats storage
 DOCKER ASSIGNED   | /etc/nginx                 | nginx config
 DOCKER ASSIGNED   | /opt/statsd                | statsd config
 DOCKER ASSIGNED   | /etc/logrotate.d           | logrotate config
@@ -139,22 +145,24 @@ echo counters | nc localhost 8126
 
 [More info & additional commands.](https://github.com/etsy/statsd/blob/master/docs/admin_interface.md)
 
-## A Note on Disk Space
+## A Note on Volumes
 
-If running this image on cloud infrastructure such as AWS,
-you should consider mounting `/opt/graphite` & `/var/log` on a larger volume.
+You may find it useful to mount explicit volumes so configs & data can be managed from a known location on the host.
 
-1. Configure the host to mount a large EBS volume.
-1. Specify the volume mounts when starting the container.
+Simply specify the desired volumes when starting the container.
 
-    ```
-    docker run -d\
-     --name graphite\
-     --restart=always\
-     -v /path/to/ebs/graphite:/opt/graphite\
-     -v /path/to/ebs/log:/var/log\
-     hopsoft/graphite-statsd
-    ```
+```
+docker run -d\
+ --name graphite\
+ --restart=always\
+ -v /path/to/graphite/configs:/opt/graphite/conf\
+ -v /path/to/graphite/data:/opt/graphite/storage\
+ -v /path/to/statsd:/opt/statsd\
+ hopsoft/graphite-statsd
+```
+
+**Note**: The container will initialize properly if you mount empty volumes at
+          `/opt/graphite`, `/opt/graphite/conf`, `/opt/graphite/storage`, or `/opt/statsd`
 
 ## Additional Reading
 
